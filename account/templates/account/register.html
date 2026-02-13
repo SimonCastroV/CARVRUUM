@@ -1,0 +1,28 @@
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'account/css/auth.css' %}">
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Crear Cuenta</h2>
+    <form method="post">
+      {% csrf_token %}
+      <label for="id_username">Nombre de usuario</label>
+      {{ form.username }}
+      <label for="id_email">Correo electrónico</label>
+      {{ form.email }}
+      <label for="id_telefono">Teléfono</label>
+      {{ form.telefono }}
+      <label for="id_ciudad_residencia">Ciudad de residencia</label>
+      {{ form.ciudad_residencia }}
+      <label for="id_password1">Contraseña</label>
+      {{ form.password1 }}
+      <label for="id_password2">Confirmar Contraseña</label>
+      {{ form.password2 }}
+ 
+      <button type="submit">Registrarse</button>
+    </form>
+    <p>¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></p>
+  </div>
+</div>
+{% endblock %}
+
