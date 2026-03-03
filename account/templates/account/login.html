@@ -1,21 +1,46 @@
-{% load static %}
+{% extends "account/base.html" %}
+{% block title %}Iniciar sesión | CarVRuuum{% endblock %}
+
 {% block content %}
-<link rel="stylesheet" href="{% static 'account/css/auth.css' %}">
-<div class="auth-container">
-  <div class="auth-card">
-    <h2>Iniciar Sesión</h2>
-    <form method="post">
+<section class="mx-auto max-w-md px-4 py-14">
+  <div class="rounded-3xl border border-slate-200 p-8 shadow-sm dark:border-slate-800">
+    <h1 class="text-2xl font-bold">Iniciar sesión</h1>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Accede con tu usuario y contraseña.</p>
+
+    <form method="post" class="mt-6 space-y-4">
       {% csrf_token %}
-      {% if next %}
-        <input type="hidden" name="next" value="{{ next }}">
-      {% endif %}
-      <label for="id_username">Nombre de usuario</label>
-      {{ form.username }}
-      <label for="id_password">Contraseña</label>
-      {{ form.password }}
-      <button type="submit">Entrar</button>
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+      <div>
+        <label class="text-sm font-semibold">Usuario</label>
+        {{ form.username }}
+      </div>
+      <div>
+        <label class="text-sm font-semibold">Contraseña</label>
+        {{ form.password }}
+      </div>
+
+      <button class="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700" type="submit">
+        Entrar
+      </button>
     </form>
-    <p>¿No tienes cuenta? <a href="{% url 'register' %}">Regístrate</a></p>
+
+    <p class="mt-6 text-sm text-slate-600 dark:text-slate-300">
+      ¿No tienes cuenta? <a class="font-semibold text-blue-600 hover:underline dark:text-blue-400" href="{% url 'register' %}">Regístrate</a>
+    </p>
   </div>
-</div>
+</section>
+
+<style>
+  /* Hace que los inputs de Django se vean bien sin tocar forms.py */
+  input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(148,163,184,.6);
+    background: transparent;
+  }
+  .dark input { border-color: rgba(51,65,85,.8); }
+</style>
 {% endblock %}

@@ -1,0 +1,144 @@
+{% extends "account/base.html" %}
+{% block title %}Explorar | CarVRuuum{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-6xl px-4 py-10">
+  <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold">Explorar vehículos</h1>
+      <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+        Filtra por marca/modelo, precio y ciudad.
+      </p>
+    </div>
+
+    <div class="text-sm text-slate-500 dark:text-slate-400">
+      {{ cars|length }} resultados
+    </div>
+  </div>
+
+  <!-- BARRA DE BÚSQUEDA ANCHA -->
+  <div class="mt-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950/40">
+    <form action="/cars/" method="get" class="grid gap-3 md:grid-cols-12 md:items-center">
+      <!-- Marca/Modelo -->
+      <div class="md:col-span-6">
+        <label class="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">Marca / Modelo / Año</label>
+        <input
+          name="q"
+          type="text"
+          list="makes_list"
+          value="{{ q }}"
+          placeholder="Ej: Mazda CX-5 2018"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+        />
+        <datalist id="makes_list">
+          {% for m in available_makes %}
+            <option value="{{ m }}"></option>
+          {% endfor %}
+        </datalist>
+      </div>
+
+      <!-- Precio -->
+      <div class="md:col-span-3">
+        <label class="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">Precio máx</label>
+        <input
+          name="max_price"
+          type="number"
+          min="0"
+          inputmode="numeric"
+          value="{{ max_price }}"
+          placeholder="Ej: 50000000"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+        />
+      </div>
+
+      <!-- Ciudad -->
+      <div class="md:col-span-3">
+        <label class="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">Ciudad</label>
+        <input
+          name="city"
+          type="text"
+          list="cities_list"
+          value="{{ city }}"
+          placeholder="Ej: Medellín"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+        />
+        <datalist id="cities_list">
+          {% for c in available_cities %}
+            <option value="{{ c }}"></option>
+          {% endfor %}
+        </datalist>
+      </div>
+
+      <div class="md:col-span-12 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+          Buscar
+        </button>
+
+        <a href="/cars/" class="text-sm font-semibold text-slate-600 hover:underline dark:text-slate-300">
+          Limpiar filtros
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- LISTADO -->
+  <div class="mt-8 grid gap-4 md:grid-cols-3">
+    {% for car in cars %}
+      <div class="relative">
+        <!-- CARD COMPLETO CLICKEABLE -->
+        <a href="/cars/{{ car.id }}/"
+           class="group block rounded-3xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md dark:border-slate-800 dark:bg-slate-950/40">
+
+          <!-- Miniatura -->
+          <div class="relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900">
+            {% with first=car.images.all.0 %}
+              {% if first %}
+                <img src="{{ first.image.url }}" alt="car" class="h-44 w-full object-cover transition-transform group-hover:scale-[1.02]">
+              {% else %}
+                <div class="flex h-44 items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+                  Sin foto
+                </div>
+              {% endif %}
+            {% endwith %}
+          </div>
+
+          <!-- Info -->
+          <div class="mt-3">
+            <p class="text-sm font-semibold">
+              {{ car.make }} {{ car.model }} {{ car.year }}
+            </p>
+            <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">
+              {% if car.city %}{{ car.city }} • {% endif %}{{ car.mileage_km }} km
+            </p>
+
+            <p class="mt-3 text-base font-bold text-blue-600 dark:text-blue-400">
+              $ {{ car.price }}
+            </p>
+          </div>
+        </a>
+
+        <!-- FAVORITO: ENCIMA DE LA MINIATURA, ESQUINA SUP DERECHA -->
+        {% if user.is_authenticated %}
+          <form method="post" action="/cars/{{ car.id }}/favorite/" class="absolute right-7 top-7 z-20">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-lg shadow-sm ring-1 ring-black/5 hover:bg-white dark:bg-slate-950/80 dark:ring-white/10"
+              aria-label="{% if car.id in favorite_ids %}Quitar favorito{% else %}Guardar favorito{% endif %}">
+              {% if car.id in favorite_ids %}❤️{% else %}🤍{% endif %}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800 md:col-span-3">
+        <p class="text-sm text-slate-600 dark:text-slate-300">
+          No se encontraron vehículos con esos filtros.
+        </p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

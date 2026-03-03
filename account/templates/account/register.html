@@ -1,28 +1,42 @@
-{% load static %}
-{% block content %}
-<link rel="stylesheet" href="{% static 'account/css/auth.css' %}">
-<div class="auth-container">
-  <div class="auth-card">
-    <h2>Crear Cuenta</h2>
-    <form method="post">
-      {% csrf_token %}
-      <label for="id_username">Nombre de usuario</label>
-      {{ form.username }}
-      <label for="id_email">Correo electrónico</label>
-      {{ form.email }}
-      <label for="id_telefono">Teléfono</label>
-      {{ form.telefono }}
-      <label for="id_ciudad_residencia">Ciudad de residencia</label>
-      {{ form.ciudad_residencia }}
-      <label for="id_password1">Contraseña</label>
-      {{ form.password1 }}
-      <label for="id_password2">Confirmar Contraseña</label>
-      {{ form.password2 }}
- 
-      <button type="submit">Registrarse</button>
-    </form>
-    <p>¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></p>
-  </div>
-</div>
-{% endblock %}
+{% extends "account/base.html" %}
+{% block title %}Registro | CarVRuuum{% endblock %}
 
+{% block content %}
+<section class="mx-auto max-w-md px-4 py-14">
+  <div class="rounded-3xl border border-slate-200 p-8 shadow-sm dark:border-slate-800">
+    <h1 class="text-2xl font-bold">Crear cuenta</h1>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Regístrate para publicar y guardar favoritos.</p>
+
+    <form method="post" class="mt-6 space-y-4">
+      {% csrf_token %}
+
+      <div><label class="text-sm font-semibold">Usuario</label>{{ form.username }}</div>
+      <div><label class="text-sm font-semibold">Correo</label>{{ form.email }}</div>
+      <div><label class="text-sm font-semibold">Teléfono</label>{{ form.telefono }}</div>
+      <div><label class="text-sm font-semibold">Ciudad</label>{{ form.ciudad_residencia }}</div>
+      <div><label class="text-sm font-semibold">Contraseña</label>{{ form.password1 }}</div>
+      <div><label class="text-sm font-semibold">Confirmar</label>{{ form.password2 }}</div>
+
+      <button class="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700" type="submit">
+        Registrarme
+      </button>
+    </form>
+
+    <p class="mt-6 text-sm text-slate-600 dark:text-slate-300">
+      ¿Ya tienes cuenta? <a class="font-semibold text-blue-600 hover:underline dark:text-blue-400" href="{% url 'login' %}">Inicia sesión</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  input, select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(148,163,184,.6);
+    background: transparent;
+  }
+  .dark input, .dark select { border-color: rgba(51,65,85,.8); }
+</style>
+{% endblock %}

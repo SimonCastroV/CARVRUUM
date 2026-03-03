@@ -1,0 +1,207 @@
+{% extends "account/base.html" %}
+{% block title %}CarVRuuum | Carros usados{% endblock %}
+
+{% block content %}
+<main>
+  <!-- HERO -->
+  <section class="mx-auto max-w-6xl px-4 py-14">
+    <div class="grid items-center gap-10 md:grid-cols-2">
+      <div>
+        <p class="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-300">
+          Compra y venta más segura en tu ciudad
+        </p>
+
+        <h1 class="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+          Compra y vende carros usados con
+          <span class="text-blue-600 dark:text-blue-400">confianza</span>.
+        </h1>
+
+        <p class="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">
+          Publica, filtra, compara y guarda tus favoritos. Todo en una sola plataforma.
+        </p>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+          <a href="/cars/" class="rounded-2xl bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-blue-700">
+            Explorar vehículos
+          </a>
+
+          {% if user.is_authenticated %}
+            <a href="/cars/new/" class="rounded-2xl border border-slate-200 px-5 py-3 text-center text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+              Publicar mi carro
+            </a>
+          {% else %}
+            <a href="{% url 'login' %}?next=/cars/new/" class="rounded-2xl border border-slate-200 px-5 py-3 text-center text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+              Publicar mi carro
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- CONTADORES -->
+        <div class="mt-8 grid grid-cols-3 gap-3 text-center">
+          <div class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+            <p class="text-xl font-bold">{{ total_cars }}</p>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Vehículos activos</p>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+            <p class="text-xl font-bold">
+              {% if user.is_authenticated %}{{ my_cars_count }}{% else %}—{% endif %}
+            </p>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Mis carros</p>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+            <p class="text-xl font-bold">
+              {% if user.is_authenticated %}{{ my_favorites_count }}{% else %}—{% endif %}
+            </p>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Mis favoritos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Búsqueda rápida (FUNCIONAL) -->
+      <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-blue-100 to-white p-6 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+        <div class="rounded-2xl border border-slate-200 bg-white/70 p-6 dark:border-slate-800 dark:bg-slate-950/40">
+          <p class="text-sm font-semibold">Búsqueda rápida</p>
+
+          <form action="/cars/" method="get" class="mt-4 grid gap-3">
+            <input
+              name="q"
+              type="text"
+              placeholder="Marca / Modelo (ej: Mazda CX-5)"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+            />
+
+            <div class="grid grid-cols-2 gap-3">
+              <input
+                name="max_price"
+                type="number"
+                min="0"
+                inputmode="numeric"
+                placeholder="Precio máx"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+              />
+              <input
+                name="city"
+                type="text"
+                placeholder="Ciudad"
+                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+              />
+            </div>
+
+            <button
+              type="submit"
+              class="rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-blue-700">
+              Buscar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <section class="border-y border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/30">
+    <div class="mx-auto grid max-w-6xl gap-4 px-4 py-10 md:grid-cols-4">
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950/40">
+        <p class="font-semibold">Publicación simple</p>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Sube 1–10 fotos y publica en minutos.</p>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950/40">
+        <p class="font-semibold">Favoritos</p>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Guarda opciones y vuelve cuando quieras.</p>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950/40">
+        <p class="font-semibold">Comparación</p>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Compara modelos con claridad.</p>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950/40">
+        <p class="font-semibold">Contacto</p>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Conecta con vendedores fácilmente.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section id="como-funciona" class="mx-auto max-w-6xl px-4 py-14">
+    <h2 class="text-2xl font-bold tracking-tight">Cómo funciona</h2>
+    <p class="mt-2 text-slate-600 dark:text-slate-300">Tres pasos y listo.</p>
+
+    <div class="mt-8 grid gap-4 md:grid-cols-3">
+      <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
+        <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">Paso 1</p>
+        <p class="mt-2 text-lg font-bold">Crea tu cuenta</p>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Usuario y contraseña para publicar y guardar favoritos.</p>
+      </div>
+      <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
+        <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">Paso 2</p>
+        <p class="mt-2 text-lg font-bold">Explora o publica</p>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Catálogo en /cars/ y publicación en /cars/new/.</p>
+      </div>
+      <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
+        <p class="text-sm font-semibold text-blue-600 dark:text-blue-400">Paso 3</p>
+        <p class="mt-2 text-lg font-bold">Guarda y decide</p>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Marca favoritos y vuelve a tu shortlist.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFICIOS -->
+  <section id="beneficios" class="mx-auto max-w-6xl px-4 pb-14">
+    <div class="grid gap-8 md:grid-cols-2">
+      <div class="rounded-3xl border border-slate-200 p-8 dark:border-slate-800">
+        <h3 class="text-xl font-bold">Para compradores</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <li>• Encuentra carros por ciudad y presupuesto.</li>
+          <li>• Guarda favoritos y vuelve luego.</li>
+          <li>• Menos tiempo buscando, más claridad.</li>
+        </ul>
+        <a href="/cars/" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+          Ver catálogo
+        </a>
+      </div>
+
+      <div class="rounded-3xl border border-slate-200 p-8 dark:border-slate-800">
+        <h3 class="text-xl font-bold">Para vendedores</h3>
+        <ul class="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <li>• Publica fácil con fotos (1–10).</li>
+          <li>• Maneja tus publicaciones desde tu cuenta.</li>
+          <li>• Más visibilidad con mejor UX.</li>
+        </ul>
+        {% if user.is_authenticated %}
+          <a href="/cars/new/" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+            Publicar ahora
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}?next=/cars/new/" class="mt-6 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+            Publicar ahora
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="border-t border-slate-200 py-14 dark:border-slate-800">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 class="text-2xl font-bold tracking-tight">Preguntas frecuentes</h2>
+      <div class="mt-8 grid gap-4 md:grid-cols-2">
+        <div class="rounded-2xl border border-slate-200 p-6 dark:border-slate-800">
+          <p class="font-semibold">¿Necesito cuenta?</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Para publicar y favoritos sí. Explorar puede ser público.</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 p-6 dark:border-slate-800">
+          <p class="font-semibold">¿Cuántas fotos puedo subir?</p>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Entre 1 y 10 fotos por publicación.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-slate-200 py-10 dark:border-slate-800">
+    <div class="mx-auto max-w-6xl px-4 text-sm text-slate-600 dark:text-slate-400">
+      © {% now "Y" %} CarVRuuum.
+    </div>
+  </footer>
+</main>
+{% endblock %}
