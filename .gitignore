@@ -1,0 +1,130 @@
+# =========================
+# Django / Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Unit test / coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+coverage.xml
+
+# Type checking / linting
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.pytype/
+.dmypy.json
+
+# Logs
+*.log
+logs/
+*.out
+
+# Local settings / secrets
+.env
+.env.*
+*.env
+local_settings.py
+
+# SQLite (si lo usas en dev)
+db.sqlite3
+db.sqlite3-journal
+
+# =========================
+# Django generated files
+# =========================
+# Media uploads (tus fotos de carros)
+media/
+# Static files collectstatic output
+staticfiles/
+
+# Cache
+*.cache
+.cache/
+
+# =========================
+# IDEs / Editors
+# =========================
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# OS junk
+# =========================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# =========================
+# Node / Frontend (Tailwind, React, etc.)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+.parcel-cache/
+.next/
+out/
+
+# =========================
+# Docker / Deployment
+# =========================
+# If you keep local override files
+docker-compose.override.yml
+
+# If you generate local certs
+*.pem
+*.crt
+*.key
+
+# =========================
+# Other
+# =========================
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
