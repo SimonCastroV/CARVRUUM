@@ -63,6 +63,23 @@
     </div>
   </form>
 
+  <div class="mt-8 rounded-3xl border border-red-200 bg-red-50/60 p-6 dark:border-red-900/40 dark:bg-red-950/20">
+    <h2 class="text-base font-semibold text-red-700 dark:text-red-300">Advertencia</h2>
+    <p class="mt-2 text-sm text-red-700/90 dark:text-red-300/90">
+      Si borras esta publicación, también se eliminarán sus fotos y no se puede deshacer.
+    </p>
+
+    <form method="post" action="{% url 'cars:car_delete' car.id %}" class="mt-4">
+      {% csrf_token %}
+      <button
+        type="submit"
+        class="rounded-2xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700"
+        onclick="return confirm('¿Seguro que quieres borrar esta publicación? Esta acción no se puede deshacer.');">
+        Borrar publicación
+      </button>
+    </form>
+  </div>
+
   <style>
     input, textarea, select {
       width: 100%;
