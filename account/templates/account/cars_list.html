@@ -119,6 +119,22 @@
           </div>
         </a>
 
+      <div class="absolute left-7 top-7 z-20 flex gap-2">
+        <a 
+          href="https://wa.me/?text=Mira este {{ car.make }} {{ car.model }} en CarVRuuum: {{ request.build_absolute_uri }}{{ car.id }}/" 
+          target="_blank"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-500/90 text-white shadow-sm hover:bg-green-600"
+          title="Compartir por WhatsApp">
+          <span class="text-xs font-bold">WA</span>
+        </a>
+
+        <a 
+          href="mailto:?subject=Mira este {{ car.make }}&body=Pillate que carrazon VRUUMMMM: {{ request.build_absolute_uri }}{{ car.id }}/"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/90 text-white shadow-sm hover:bg-blue-600"
+          title="Compartir por Correo">
+          <span class="text-xs font-bold">@</span>
+        </a>
+      </div>
         <!-- FAVORITO: ENCIMA DE LA MINIATURA, ESQUINA SUP DERECHA -->
         {% if user.is_authenticated %}
           <form method="post" action="/cars/{{ car.id }}/favorite/" class="absolute right-7 top-7 z-20">
@@ -142,3 +158,4 @@
   </div>
 </section>
 {% endblock %}
+
