@@ -195,3 +195,17 @@ def car_delete(request, car_id: int):
     car.delete()
     return redirect("/cars/")
 
+@login_required
+def my_favorites(request):
+    favorite_ids = set(
+        Favorite.objects.filter(user=request.user).values_list("car_id", flat=True)
+    )
+    cars = (
+        Car.objects.filter(id__in=favorite_ids, is_active=True)
+        .prefetch_related("images")
+        .order_by("-created_at")
+    )
+    return render(request, "account/my_favorites.html", {
+        "cars": cars,
+        "favorite_ids": favorite_ids,
+    })
