@@ -54,7 +54,16 @@
         </form>
       {% else %}
         <a href="{% url 'login' %}?next=/cars/{{ car.id }}/" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
-          Inicia sesión para favoritos
+          Favoritos ❤️
+        </a>
+        <a href="{% url 'login' %}?next={% url 'cars:car_edit' car.id %}" class="rounded-xl border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/30">
+          Inicia Sesión para Editar
+        </a>
+      {% endif %}
+
+      {% if user.is_authenticated and user == car.owner %}
+        <a href="{% url 'cars:car_edit' car.id %}" class="rounded-xl border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/30">
+          Editar publicación
         </a>
       {% endif %}
 

@@ -167,3 +167,31 @@ def car_create(request):
         "car_form": car_form,
         "images_error": images_error,
     })
+
+@login_required
+def car_edit(request, car_id: int):
+    car = get_object_or_404(Car, id=car_id, owner=request.user)
+
+    if request.method == "POST":
+        car_form = CarForm(request.POST, instance=car)
+        if car_form.is_valid():
+            car_form.save()
+            return redirect(f"/cars/{car.id}/")
+    else:
+        car_form = CarForm(instance=car)
+
+    return render(request, "account/car_edit.html", {
+        "car": car,
+        "car_form": car_form,
+    })
+
+
+@login_required
+def car_delete(request, car_id: int):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    car = get_object_or_404(Car, id=car_id, owner=request.user)
+    car.delete()
+    return redirect("/cars/")
+

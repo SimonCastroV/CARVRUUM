@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.urls import reverse
 
 
 class Car(models.Model):
@@ -23,6 +24,10 @@ class Car(models.Model):
 
     def __str__(self):
         return f"{self.make} {self.model} {self.year} - {self.price}"
+    
+    def get_url(self):
+        return reverse('detalle_auto', args=[str(self.id)])
+
 
 
 def car_image_upload_to(instance, filename: str) -> str:
