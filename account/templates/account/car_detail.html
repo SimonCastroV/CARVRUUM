@@ -1,4 +1,5 @@
 {% extends "account/base.html" %}
+{% load humanize %}
 {% block title %}{{ car.make }} {{ car.model }} {{ car.year }} | CarVRuuum{% endblock %}
 
 {% block content %}
@@ -10,7 +11,7 @@
       <h1 class="mt-2 text-2xl font-bold">{{ car.make }} {{ car.model }} {{ car.year }}</h1>
 
       <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-        {% if car.city %}{{ car.city }} • {% endif %}{{ car.mileage_km }} km
+        {% if car.city %}{{ car.city }} • {% endif %}{{ car.mileage_km|intcomma }} km
       </p>
 
       <!-- Publicado por + WhatsApp -->
@@ -105,7 +106,7 @@
   <div class="mt-4 grid gap-4 md:grid-cols-3">
     <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
       <p class="text-sm text-slate-600 dark:text-slate-300">Kilometraje</p>
-      <p class="mt-1 font-semibold">{{ car.mileage_km }} km</p>
+      <p class="mt-1 font-semibold">{{ car.mileage_km|intcomma }} km</p>
     </div>
     <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
       <p class="text-sm text-slate-600 dark:text-slate-300">Ciudad</p>

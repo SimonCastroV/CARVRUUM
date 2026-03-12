@@ -29,6 +29,9 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+USE_L10N = False
+USE_THOUSAND_SEPARATOR = True   
+NUMBER_GROUPING = 3
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'account.apps.AccountConfig',
     'cars.apps.CarsConfig',
+    'django.contrib.humanize',
 
 ]
 LOGIN_URL = '/login/'
@@ -112,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-co'
 
 TIME_ZONE = 'UTC'
 

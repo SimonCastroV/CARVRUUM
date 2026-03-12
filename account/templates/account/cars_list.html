@@ -1,5 +1,6 @@
 {% extends "account/base.html" %}
 {% block title %}Explorar | CarVRuuum{% endblock %}
+{% load humanize car_filters %}
 
 {% block content %}
 <section class="mx-auto max-w-6xl px-4 py-10">
@@ -110,11 +111,11 @@
               {{ car.make }} {{ car.model }} {{ car.year }}
             </p>
             <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">
-              {% if car.city %}{{ car.city }} • {% endif %}{{ car.mileage_km }} km
+              {% if car.city %}{{ car.city }} • {% endif %}{{ car.mileage_km|miles }} km
             </p>
 
             <p class="mt-3 text-base font-bold text-blue-600 dark:text-blue-400">
-              $ {{ car.price }}
+              $ {{ car.price|miles }}
             </p>
           </div>
         </a>
