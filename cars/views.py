@@ -77,7 +77,7 @@ def cars_list(request):
         .order_by("city")  # alfabético
     )
 
-    return render(request, "account/cars_list.html", {
+    return render(request, "cars/cars_list.html", {
         "cars": cars,
         "favorite_ids": favorite_ids,
         "q": q,
@@ -107,7 +107,7 @@ def car_detail(request, car_id: int):
     msg = f"Hola! Me interesa tu {car.make} {car.model} {car.year}. ¿Sigue disponible? {car_url}"
     seller_whatsapp_url = f"https://wa.me/{wa_number}?text={quote(msg)}" if wa_number else None
 
-    return render(request, "account/car_detail.html", {
+    return render(request, "cars/car_detail.html", {
         "car": car,
         "is_favorite": is_favorite,
         "seller_whatsapp_url": seller_whatsapp_url,
@@ -127,7 +127,7 @@ def toggle_favorite(request, car_id: int):
         fav.delete()
 
     back = request.META.get("HTTP_REFERER")
-    return redirect(back or "/cars/")
+    return redirect(back or "cars:cars_list")
 
 
 @login_required
@@ -158,12 +158,12 @@ def car_create(request):
                 for f in files:
                     CarImage.objects.create(car=car, image=f)
 
-            return redirect("/cars/")
+            return redirect("cars:cars_list")
 
     else:
         car_form = CarForm()
 
-    return render(request, "account/car_create.html", {
+    return render(request, "cars/car_create.html", {
         "car_form": car_form,
         "images_error": images_error,
     })
@@ -176,11 +176,11 @@ def car_edit(request, car_id: int):
         car_form = CarForm(request.POST, instance=car)
         if car_form.is_valid():
             car_form.save()
-            return redirect(f"/cars/{car.id}/")
+            return redirect("cars:car_detail", car_id=car.id)
     else:
         car_form = CarForm(instance=car)
 
-    return render(request, "account/car_edit.html", {
+    return render(request, "cars/car_edit.html", {
         "car": car,
         "car_form": car_form,
     })
@@ -193,7 +193,7 @@ def car_delete(request, car_id: int):
 
     car = get_object_or_404(Car, id=car_id, owner=request.user)
     car.delete()
-    return redirect("/cars/")
+    return redirect("cars:cars_list")
 
 @login_required
 def my_favorites(request):
@@ -205,7 +205,7 @@ def my_favorites(request):
         .prefetch_related("images")
         .order_by("-created_at")
     )
-    return render(request, "account/my_favorites.html", {
+    return render(request, "cars/my_favorites.html", {
         "cars": cars,
         "favorite_ids": favorite_ids,
     })

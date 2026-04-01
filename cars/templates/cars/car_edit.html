@@ -1,21 +1,20 @@
-{% extends "account/base.html" %}
-{% block title %}Publicar carro | CarVRuuum{% endblock %}
+{% extends "base.html" %}
+{% block title %}Editar vehículo | CarVRuuum{% endblock %}
 
 {% block content %}
 <section class="mx-auto max-w-3xl px-4 py-10">
-  <h1 class="text-2xl font-bold">Publicar mi carro</h1>
+  <h1 class="text-2xl font-bold">Editar publicación</h1>
   <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-    Sube entre 1 y 10 fotos y completa la información.
+    Ajusta la información de tu {{ car.make }} {{ car.model }} {{ car.year }}.
   </p>
 
-  {% if car_form.errors or images_error %}
+  {% if car_form.errors %}
     <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
-      {% if images_error %}<div>• {{ images_error }}</div>{% endif %}
-      {% if car_form.errors %}<div class="mt-2">{{ car_form.errors }}</div>{% endif %}
+      {{ car_form.errors }}
     </div>
   {% endif %}
 
-  <form method="post" enctype="multipart/form-data" class="mt-6 space-y-5">
+  <form method="post" class="mt-6 space-y-5">
     {% csrf_token %}
 
     <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
@@ -54,20 +53,32 @@
       </div>
     </div>
 
-    <div class="rounded-3xl border border-slate-200 p-6 dark:border-slate-800">
-      <h2 class="font-semibold">Fotos (1 a 10)</h2>
-      <div class="mt-4">
-        <input type="file" name="images" multiple accept="image/*" required>
-      </div>
-      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-        Para seleccionar varias fotos en Mac: mantén ⌘ (Command) o Shift.
-      </p>
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <button class="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700" type="submit">
+        Guardar cambios
+      </button>
+      <a href="{% url 'cars:car_detail' car.id %}" class="w-full rounded-2xl border border-slate-200 py-3 text-center text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+        Cancelar
+      </a>
     </div>
-
-    <button class="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700" type="submit">
-      Publicar
-    </button>
   </form>
+
+  <div class="mt-8 rounded-3xl border border-red-200 bg-red-50/60 p-6 dark:border-red-900/40 dark:bg-red-950/20">
+    <h2 class="text-base font-semibold text-red-700 dark:text-red-300">Advertencia</h2>
+    <p class="mt-2 text-sm text-red-700/90 dark:text-red-300/90">
+      Si borras esta publicación, también se eliminarán sus fotos y no se puede deshacer.
+    </p>
+
+    <form method="post" action="{% url 'cars:car_delete' car.id %}" class="mt-4">
+      {% csrf_token %}
+      <button
+        type="submit"
+        class="rounded-2xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700"
+        onclick="return confirm('¿Seguro que quieres borrar esta publicación? Esta acción no se puede deshacer.');">
+        Borrar publicación
+      </button>
+    </form>
+  </div>
 
   <style>
     input, textarea, select {
@@ -80,7 +91,6 @@
     }
     textarea { min-height: 120px; }
     .dark input, .dark textarea, .dark select { border-color: rgba(51,65,85,.8); }
-    input[type="file"] { padding: 10px 12px; }
   </style>
 </section>
 {% endblock %}

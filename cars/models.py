@@ -26,7 +26,7 @@ class Car(models.Model):
         return f"{self.make} {self.model} {self.year} - {self.price}"
     
     def get_url(self):
-        return reverse('detalle_auto', args=[str(self.id)])
+        return reverse('cars:car_detail', args=[str(self.id)])
 
 
 
