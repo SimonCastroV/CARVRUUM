@@ -13,6 +13,9 @@ class Car(models.Model):
     price = models.PositiveIntegerField(validators=[MinValueValidator(0)])
     mileage_km = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
 
+    is_sold = models.BooleanField(default=False)
+    sold_at = models.DateTimeField(blank=True, null=True)
+
     city = models.CharField(max_length=80, blank=True, default="")
     description = models.TextField(blank=True, default="")
 

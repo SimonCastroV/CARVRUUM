@@ -12,4 +12,5 @@ urlpatterns = [
     path("<int:car_id>/favorite/", views.toggle_favorite, name="toggle_favorite"),
     path("favorites/", views.my_favorites, name="my_favorites"),
     path("history/", views.viewed_history, name="viewed_history"),
+    path("<int:car_id>/toggle-sold/", views.toggle_sold, name="toggle_sold"),
 ]

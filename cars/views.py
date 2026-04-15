@@ -157,6 +157,25 @@ def toggle_favorite(request, car_id: int):
     back = request.META.get("HTTP_REFERER")
     return redirect(back or "cars:cars_list")
 
+@login_required
+def toggle_sold(request, car_id: int):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    car = get_object_or_404(Car, id=car_id, owner=request.user)
+
+    if car.is_sold:
+        car.is_sold = False
+        car.sold_at = None
+    else:
+        car.is_sold = True
+        car.sold_at = timezone.now()
+
+    car.save(update_fields=["is_sold", "sold_at"])
+
+    back = request.META.get("HTTP_REFERER")
+    return redirect(back or "cars:car_detail", car_id=car.id)
+
 
 @login_required
 def car_create(request):

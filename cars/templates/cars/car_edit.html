@@ -77,6 +77,22 @@
         onclick="return confirm('¿Seguro que quieres borrar esta publicación? Esta acción no se puede deshacer.');">
         Borrar publicación
       </button>
+      {% if user.is_authenticated and user == car.owner %}
+  <form method="post" action="{% url 'cars:toggle_sold' car.id %}" class="mt-4">
+    {% csrf_token %}
+    {% if car.is_sold %}
+      <button type="submit"
+              class="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700">
+        Marcar como disponible
+      </button>
+    {% else %}
+      <button type="submit"
+              class="rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-600">
+        Marcar como vendido
+      </button>
+    {% endif %}
+  </form>
+{% endif %}
     </form>
   </div>
 
