@@ -5,9 +5,9 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
-
+from django.utils import timezone
+from .models import Car, CarImage, Favorite, CarViewHistory
 from .forms import CarForm
-from .models import Car, CarImage, Favorite
 
 
 def _normalize_phone_to_wa(phone: str) -> str | None:
@@ -95,6 +95,22 @@ def car_detail(request, car_id: int):
         is_active=True,
     )
 
+    # Guardar historial de visualización
+    if request.user.is_authenticated:
+        history, created = CarViewHistory.objects.get_or_create(
+            user=request.user,
+            car=car,
+            defaults={
+                "last_viewed_at": timezone.now(),
+                "times_viewed": 1,
+            }
+        )
+
+        if not created:
+            history.last_viewed_at = timezone.now()
+            history.times_viewed += 1
+            history.save(update_fields=["last_viewed_at", "times_viewed"])
+
     is_favorite = False
     if request.user.is_authenticated:
         is_favorite = Favorite.objects.filter(user=request.user, car=car).exists()
@@ -114,6 +130,18 @@ def car_detail(request, car_id: int):
         "seller_phone": seller_phone,
     })
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def viewed_history(request):
+    history = CarViewHistory.objects.filter(
+        user=request.user,
+        car__is_active=True
+    ).select_related("car")
+
+    return render(request, "cars/history.html", {
+        "history": history
+    })
 
 @login_required
 def toggle_favorite(request, car_id: int):

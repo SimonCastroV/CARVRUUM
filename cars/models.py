@@ -42,6 +42,25 @@ class CarImage(models.Model):
     def __str__(self):
         return f"Image {self.id} for Car {self.car_id}"
 
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+
+class CarViewHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="view_history")
+    car = models.ForeignKey("Car", on_delete=models.CASCADE, related_name="viewed_by")
+    first_viewed_at = models.DateTimeField(auto_now_add=True)
+    last_viewed_at = models.DateTimeField(default=timezone.now)
+    times_viewed = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ("user", "car")
+        ordering = ["-last_viewed_at"]
+
+    def __str__(self):
+        return f"{self.user.username} vio {self.car}"
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites")
