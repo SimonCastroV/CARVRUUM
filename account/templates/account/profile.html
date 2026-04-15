@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil | CarVRuuum{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 py-10">
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    
+    <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 px-6 py-10 text-white">
+      <div class="flex items-center gap-4">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-bold uppercase">
+          {{ user_obj.username|slice:":1" }}
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold">{{ user_obj.username }}</h1>
+          <p class="text-blue-100">{{ user_obj.email|default:"Sin correo registrado" }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-4 p-6 md:grid-cols-2">
+      <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
+        <p class="text-sm text-slate-500">Usuario</p>
+        <p class="mt-1 text-lg font-semibold">{{ user_obj.username }}</p>
+      </div>
+
+      <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
+        <p class="text-sm text-slate-500">Correo</p>
+        <p class="mt-1 text-lg font-semibold">{{ user_obj.email|default:"No registrado" }}</p>
+      </div>
+
+      <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
+        <p class="text-sm text-slate-500">Teléfono</p>
+        <p class="mt-1 text-lg font-semibold">
+          {% if profile.telefono %}{{ profile.telefono }}{% else %}No registrado{% endif %}
+        </p>
+      </div>
+
+      <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
+        <p class="text-sm text-slate-500">Ciudad</p>
+        <p class="mt-1 text-lg font-semibold">
+          {% if profile.ciudad %}{{ profile.ciudad }}{% else %}No registrada{% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="grid gap-4 px-6 pb-6 md:grid-cols-2">
+      <div class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
+        <p class="text-sm text-slate-500">Vehículos publicados</p>
+        <p class="mt-2 text-3xl font-bold">{{ my_cars_count }}</p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
+        <p class="text-sm text-slate-500">Favoritos</p>
+        <p class="mt-2 text-3xl font-bold">{{ my_favorites_count }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

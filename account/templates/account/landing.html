@@ -29,13 +29,16 @@
             <a href="/cars/new/" class="rounded-2xl border border-slate-200 px-5 py-3 text-center text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
               Publicar mi carro
             </a>
+
+            <a href="{% url 'profile' %}" class="rounded-2xl border border-blue-200 px-5 py-3 text-center text-sm font-semibold text-blue-600 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-slate-900">
+              Ver mi perfil
+            </a>
           {% else %}
             <a href="{% url 'login' %}?next=/cars/new/" class="rounded-2xl border border-slate-200 px-5 py-3 text-center text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
               Publicar mi carro
             </a>
           {% endif %}
         </div>
-
         <!-- CONTADORES -->
         <div class="mt-8 grid grid-cols-3 gap-3 text-center">
           <div class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">

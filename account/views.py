@@ -24,6 +24,19 @@ def landing(request):
         "my_favorites_count": my_favorites_count,
     })
 
+@login_required
+def profile_view(request):
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+
+    my_cars_count = Car.objects.filter(owner=request.user).count()
+    my_favorites_count = Favorite.objects.filter(user=request.user).count()
+
+    return render(request, "account/profile.html", {
+        "user_obj": request.user,
+        "profile": profile,
+        "my_cars_count": my_cars_count,
+        "my_favorites_count": my_favorites_count,
+    })
 
 def login_view(request):
     next_url = request.GET.get("next") or request.POST.get("next")
