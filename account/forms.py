@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from .models import Profile
-
+from django import forms
+from .models import Profile, CIUDADES_COLOMBIA
 # ------------------------------
 # LOGIN FORM
 # ------------------------------
@@ -127,3 +128,29 @@ class ProfileForm(forms.ModelForm):
         widgets = {
             'telefono': forms.TextInput(attrs={'class': 'form-control rounded'}),
         }
+
+
+
+class ProfileEditForm(forms.Form):
+    telefono = forms.CharField(
+        max_length=20,
+        required=False,
+        label="Teléfono",
+        widget=forms.TextInput(attrs={
+            "class": "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+        })
+    )
+    ciudad = forms.ChoiceField(
+        choices=[("", "— Selecciona una ciudad —")] + list(CIUDADES_COLOMBIA),
+        required=False,
+        label="Ciudad",
+        widget=forms.Select(attrs={
+            "class": "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+        })
+    )
+
+    def __init__(self, *args, profile=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if profile:
+            self.fields["telefono"].initial = profile.telefono
+            self.fields["ciudad"].initial   = profile.ciudad

@@ -4,58 +4,155 @@
 {% block content %}
 <section class="mx-auto max-w-5xl px-4 py-10">
   <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-    
+
+    <!-- Header -->
     <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900 px-6 py-10 text-white">
-      <div class="flex items-center gap-4">
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-bold uppercase">
-          {{ user_obj.username|slice:":1" }}
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-bold uppercase">
+            {{ user_obj.username|slice:":1" }}
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold">{{ user_obj.username }}</h1>
+            <p class="text-blue-100">{{ user_obj.email|default:"Sin correo registrado" }}</p>
+          </div>
         </div>
-        <div>
-          <h1 class="text-3xl font-bold">{{ user_obj.username }}</h1>
-          <p class="text-blue-100">{{ user_obj.email|default:"Sin correo registrado" }}</p>
-        </div>
+        <button onclick="document.getElementById('edit-modal').classList.remove('hidden')"
+                class="flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur hover:bg-white/30 transition">
+           Editar perfil
+        </button>
       </div>
     </div>
 
+    <!-- Info del perfil -->
     <div class="grid gap-4 p-6 md:grid-cols-2">
       <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
         <p class="text-sm text-slate-500">Usuario</p>
         <p class="mt-1 text-lg font-semibold">{{ user_obj.username }}</p>
       </div>
-
       <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
         <p class="text-sm text-slate-500">Correo</p>
         <p class="mt-1 text-lg font-semibold">{{ user_obj.email|default:"No registrado" }}</p>
       </div>
-
       <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
         <p class="text-sm text-slate-500">Teléfono</p>
         <p class="mt-1 text-lg font-semibold">
           {% if profile.telefono %}{{ profile.telefono }}{% else %}No registrado{% endif %}
         </p>
       </div>
-
       <div class="rounded-2xl bg-slate-50 p-5 dark:bg-slate-950">
         <p class="text-sm text-slate-500">Ciudad</p>
         <p class="mt-1 text-lg font-semibold">
-          {% if profile.ciudad %}{{ profile.ciudad }}{% else %}No registrada{% endif %}
+          {% if profile.ciudad %}{{ profile.get_ciudad_display }}{% else %}No registrada{% endif %}
         </p>
       </div>
     </div>
 
-    <div class="grid gap-4 px-6 pb-6 md:grid-cols-2">
-      <div class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
-        <p class="text-sm text-slate-500">Vehículos publicados</p>
-        <p class="mt-2 text-3xl font-bold">{{ my_cars_count }}</p>
-      </div>
+    <!-- Vehículos publicados -->
+    <div class="px-6 pb-6">
+      <h2 class="mb-4 text-lg font-bold text-slate-700 dark:text-slate-200">
+         Vehículos publicados ({{ my_cars.count }})
+      </h2>
+      {% if my_cars %}
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {% for car in my_cars %}
+          <a href="{{ car.get_url }}"
+             class="group rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden transition hover:shadow-md dark:border-slate-700 dark:bg-slate-950">
+            {% with car.images.first as img %}
+              {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ car.make }} {{ car.model }}"
+                     class="h-40 w-full object-cover group-hover:opacity-90 transition">
+              {% else %}
+                <div class="flex h-40 w-full items-center justify-center bg-slate-200 text-4xl dark:bg-slate-800">🚘</div>
+              {% endif %}
+            {% endwith %}
+            <div class="p-4">
+              <p class="font-semibold text-slate-800 dark:text-white">{{ car.make }} {{ car.model }}</p>
+              <p class="text-sm text-slate-500">{{ car.year }} · ${{ car.price|floatformat:0 }}</p>
+              <p class="text-xs text-slate-400 mt-1">{{ car.mileage_km|floatformat:0 }} km · {{ car.city }}</p>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-sm text-slate-400">No has publicado vehículos aún.</p>
+      {% endif %}
+    </div>
 
-      <div class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
-        <p class="text-sm text-slate-500">Favoritos</p>
-        <p class="mt-2 text-3xl font-bold">{{ my_favorites_count }}</p>
-      </div>
+    <!-- Favoritos -->
+    <div class="px-6 pb-6">
+      <h2 class="mb-4 text-lg font-bold text-slate-700 dark:text-slate-200">
+        ❤️ Favoritos ({{ my_favorites.count }})
+      </h2>
+      {% if my_favorites %}
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {% for fav in my_favorites %}
+          <a href="{{ fav.car.get_url }}"
+             class="group rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden transition hover:shadow-md dark:border-slate-700 dark:bg-slate-950">
+            {% with fav.car.images.first as img %}
+              {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ fav.car.make }} {{ fav.car.model }}"
+                     class="h-40 w-full object-cover group-hover:opacity-90 transition">
+              {% else %}
+                <div class="flex h-40 w-full items-center justify-center bg-slate-200 text-4xl dark:bg-slate-800">🚘</div>
+              {% endif %}
+            {% endwith %}
+            <div class="p-4">
+              <p class="font-semibold text-slate-800 dark:text-white">{{ fav.car.make }} {{ fav.car.model }}</p>
+              <p class="text-sm text-slate-500">{{ fav.car.year }} · ${{ fav.car.price|floatformat:0 }}</p>
+              <p class="text-xs text-slate-400 mt-1">{{ fav.car.mileage_km|floatformat:0 }} km · {{ fav.car.city }}</p>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-sm text-slate-400">No tienes vehículos en favoritos.</p>
+      {% endif %}
+    </div>
 
-      <a href="{% url 'cars:viewed_history' %}">Historial</a>
+    <div class="px-6 pb-6">
+      <a href="{% url 'cars:viewed_history' %}" class="text-sm text-blue-600 hover:underline">📋 Ver historial</a>
     </div>
   </div>
 </section>
+
+<!-- Modal de edición -->
+<div id="edit-modal"
+     class="{% if not edit_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+  <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+    <div class="mb-5 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-slate-800 dark:text-white">Editar perfil</h2>
+      <button onclick="document.getElementById('edit-modal').classList.add('hidden')"
+              class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="space-y-4">
+        {% for field in form %}
+        <div>
+          <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="mt-1 text-xs text-red-500">{{ field.errors.0 }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-6 flex gap-3">
+        <button type="submit"
+                class="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition">
+          Guardar cambios
+        </button>
+        <button type="button"
+                onclick="document.getElementById('edit-modal').classList.add('hidden')"
+                class="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-slate-600 hover:bg-slate-50 transition dark:border-slate-700 dark:text-slate-300">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}

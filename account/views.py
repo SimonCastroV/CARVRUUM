@@ -3,7 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
-from .forms import RegisterForm
+from .forms import RegisterForm, ProfileEditForm
 from .models import Profile
 
 from cars.models import Car, Favorite
@@ -24,19 +24,37 @@ def landing(request):
         "my_favorites_count": my_favorites_count,
     })
 
+
 @login_required
 def profile_view(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    my_cars_count = Car.objects.filter(owner=request.user).count()
-    my_favorites_count = Favorite.objects.filter(user=request.user).count()
+    my_cars      = Car.objects.filter(owner=request.user, is_active=True).order_by("-created_at")
+    my_favorites = Favorite.objects.filter(user=request.user).select_related("car").order_by("-id")
+
+    edit_open = False
+
+    if request.method == "POST":
+        form = ProfileEditForm(request.POST, profile=profile)
+        if form.is_valid():
+            profile.telefono = form.cleaned_data["telefono"]
+            profile.ciudad   = form.cleaned_data["ciudad"]
+            profile.save()
+            return redirect("profile")
+        else:
+            edit_open = True
+    else:
+        form = ProfileEditForm(profile=profile)
 
     return render(request, "account/profile.html", {
-        "user_obj": request.user,
-        "profile": profile,
-        "my_cars_count": my_cars_count,
-        "my_favorites_count": my_favorites_count,
+        "user_obj":     request.user,
+        "profile":      profile,
+        "my_cars":      my_cars,
+        "my_favorites": my_favorites,
+        "form":         form,
+        "edit_open":    edit_open,
     })
+
 
 def login_view(request):
     next_url = request.GET.get("next") or request.POST.get("next")
@@ -63,7 +81,7 @@ def register_view(request):
 
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.telefono = form.cleaned_data.get("telefono")
-            profile.ciudad = form.cleaned_data.get("ciudad_residencia")
+            profile.ciudad   = form.cleaned_data.get("ciudad_residencia")
             profile.save()
 
             return redirect("login")
@@ -77,12 +95,12 @@ def register_view(request):
 def home(request):
     profile = getattr(request.user, "profile", None)
 
-    my_cars_count = Car.objects.filter(owner=request.user).count()
+    my_cars_count      = Car.objects.filter(owner=request.user).count()
     my_favorites_count = Favorite.objects.filter(user=request.user).count()
 
     return render(request, "account/home.html", {
-        "username": request.user.username,
-        "ciudad": profile.ciudad if profile else None,
-        "my_cars_count": my_cars_count,
+        "username":           request.user.username,
+        "ciudad":             profile.ciudad if profile else None,
+        "my_cars_count":      my_cars_count,
         "my_favorites_count": my_favorites_count,
     })
