@@ -19,7 +19,7 @@
         </div>
         <button onclick="document.getElementById('edit-modal').classList.remove('hidden')"
                 class="flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur hover:bg-white/30 transition">
-           Editar perfil
+          Editar perfil
         </button>
       </div>
     </div>
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <!-- Vehículos publicados -->
+<!-- Vehículos publicados -->
     <div class="px-6 pb-6">
       <h2 class="mb-4 text-lg font-bold text-slate-700 dark:text-slate-200">
          Vehículos publicados ({{ my_cars.count }})
@@ -116,6 +116,7 @@
   </div>
 </section>
 
+
 <!-- Modal de edición -->
 <div id="edit-modal"
      class="{% if not edit_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
@@ -123,7 +124,7 @@
     <div class="mb-5 flex items-center justify-between">
       <h2 class="text-xl font-bold text-slate-800 dark:text-white">Editar perfil</h2>
       <button onclick="document.getElementById('edit-modal').classList.add('hidden')"
-              class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+              class="text-xl leading-none text-slate-400 hover:text-slate-600">✕</button>
     </div>
 
     <form method="POST">
@@ -131,7 +132,7 @@
       <div class="space-y-4">
         {% for field in form %}
         <div>
-          <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+          <label class="mb-1 block text-sm font-medium text-slate-600 dark:text-slate-300">
             {{ field.label }}
           </label>
           {{ field }}
@@ -143,12 +144,12 @@
       </div>
       <div class="mt-6 flex gap-3">
         <button type="submit"
-                class="flex-1 rounded-xl bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 transition">
+                class="flex-1 rounded-xl bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700">
           Guardar cambios
         </button>
         <button type="button"
                 onclick="document.getElementById('edit-modal').classList.add('hidden')"
-                class="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-slate-600 hover:bg-slate-50 transition dark:border-slate-700 dark:text-slate-300">
+                class="flex-1 rounded-xl border border-slate-200 px-4 py-2 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300">
           Cancelar
         </button>
       </div>
