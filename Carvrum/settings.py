@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'account.apps.AccountConfig',
     'cars.apps.CarsConfig',
+    'messaging.apps.MessagingConfig',
     'django.contrib.humanize',
-
 ]
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/login/'

@@ -29,6 +29,14 @@
               Contactar por WhatsApp
             </a>
 
+            {% if user.is_authenticated and user != car.owner %}
+            <a href="{% url 'messaging:start_conversation' car.id %}"
+              class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+              Chatear en CarVRuuum
+            </a>
+            {% endif %}
+            
+
             {% if seller_phone %}
               <span class="text-xs text-slate-500 dark:text-slate-400">
                 Tel: {{ seller_phone }}

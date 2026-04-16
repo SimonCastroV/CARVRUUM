@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Chat | CarVRuuum{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-4xl px-4 py-10">
+  <div class="mb-4">
+    <a href="{% url 'messaging:conversation_list' %}" class="text-sm text-blue-600 hover:underline">
+      ← Volver a chats
+    </a>
+    <h1 class="mt-2 text-2xl font-bold">Chat</h1>
+    <p class="text-sm text-slate-500">
+      {{ conversation.car.make }} {{ conversation.car.model }} · {{ conversation.car.year }}
+    </p>
+  </div>
+
+  <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div id="messages-box" class="h-[500px] space-y-3 overflow-y-auto p-4">
+      {% for msg in messages %}
+        <div class="{% if msg.sender == request.user %}flex justify-end{% else %}flex justify-start{% endif %}">
+          <div class="{% if msg.sender == request.user %}bg-blue-600 text-white{% else %}bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white{% endif %} max-w-[75%] rounded-2xl px-4 py-3">
+            <p class="text-sm">{{ msg.text }}</p>
+            <p class="mt-1 text-[11px] opacity-70">{{ msg.created_at|date:"H:i" }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <form id="chat-form" class="border-t border-slate-200 p-4 dark:border-slate-800">
+      {% csrf_token %}
+      <div class="flex gap-3">
+        {{ form.text }}
+        <button
+          type="submit"
+          class="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">
+          Enviar
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  const conversationId = {{ conversation.id }};
+  const currentUserId = {{ request.user.id }};
+  const messagesBox = document.getElementById("messages-box");
+  const chatForm = document.getElementById("chat-form");
+  const messageInput = document.getElementById("id_text");
+
+  function scrollToBottom() {
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
+  function renderMessages(messages) {
+    messagesBox.innerHTML = "";
+
+    messages.forEach((msg) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = msg.sender_id === currentUserId ? "flex justify-end" : "flex justify-start";
+
+      const bubble = document.createElement("div");
+      bubble.className = msg.sender_id === currentUserId
+        ? "max-w-[75%] rounded-2xl px-4 py-3 bg-blue-600 text-white"
+        : "max-w-[75%] rounded-2xl px-4 py-3 bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white";
+
+      bubble.innerHTML = `
+        <p class="text-sm"></p>
+        <p class="mt-1 text-[11px] opacity-70">${msg.created_at}</p>
+      `;
+      bubble.querySelector("p").textContent = msg.text;
+
+      wrapper.appendChild(bubble);
+      messagesBox.appendChild(wrapper);
+    });
+
+    scrollToBottom();
+  }
+
+  async function fetchMessages() {
+    const res = await fetch(`/messages/${conversationId}/messages/`);
+    if (!res.ok) return;
+
+    const data = await res.json();
+    renderMessages(data.messages);
+  }
+
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const text = messageInput.value.trim();
+    if (!text) return;
+
+    const formData = new FormData();
+    formData.append("text", text);
+    formData.append("csrfmiddlewaretoken", document.querySelector("[name=csrfmiddlewaretoken]").value);
+
+    const res = await fetch(`/messages/${conversationId}/send/`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      messageInput.value = "";
+      await fetchMessages();
+    }
+  });
+
+  scrollToBottom();
+  setInterval(fetchMessages, 3000);
+</script>
+{% endblock %}

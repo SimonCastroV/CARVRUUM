@@ -11,6 +11,7 @@ urlpatterns = [
 
     # cars con namespace
     path("cars/", include(("cars.urls", "cars"), namespace="cars")),
+    path("messages/", include(("messaging.urls", "messaging"), namespace="messaging")),
 ]
 
 if settings.DEBUG:

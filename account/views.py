@@ -140,7 +140,7 @@ def verify_email_view(request):
                     request.session.pop(key, None)
 
                 login(request, user)
-                return redirect("home")
+                return redirect("profile")
 
             else:
                 attempts += 1
@@ -196,13 +196,13 @@ def login_view(request):
     next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.user.is_authenticated:
-        return redirect(next_url or "home")
+        return redirect(next_url or "profile")
 
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             login(request, form.get_user())
-            return redirect(next_url or "home")
+            return redirect(next_url or "profile")
     else:
         form = AuthenticationForm()
 

@@ -59,36 +59,41 @@
       </nav>
 
       <div class="flex items-center gap-2">
-        <button onclick="toggleTheme()"
-          class="rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
-          Night Mode
-        </button>
+  <button onclick="toggleTheme()"
+    class="rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+    Night Mode
+  </button>
 
-        {% if user.is_authenticated %}
-          <a href="{% url 'profile' %}"
-             class="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
-            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold uppercase text-white">
-              {{ user.username|slice:":1" }}
-            </span>
-            {{ user.username }}
-          </a>
+  {% if user.is_authenticated %}
+    <a href="{% url 'messaging:conversation_list' %}"
+       class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+      Chats
+    </a>
 
-          <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button class="rounded-xl border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
-              Salir
-            </button>
-          </form>
-        {% else %}
-          <a href="{% url 'login' %}" class="rounded-xl px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-900">
-            Iniciar sesión
-          </a>
-          <a href="{% url 'register' %}"
-             class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-            Registrarme
-          </a>
-        {% endif %}
-      </div>
+    <a href="{% url 'profile' %}"
+       class="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+      <span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold uppercase text-white">
+        {{ user.username|slice:":1" }}
+      </span>
+      {{ user.username }}
+    </a>
+
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="rounded-xl border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+        Salir
+      </button>
+    </form>
+  {% else %}
+    <a href="{% url 'login' %}" class="rounded-xl px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-900">
+      Iniciar sesión
+    </a>
+    <a href="{% url 'register' %}"
+       class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+      Registrarme
+    </a>
+  {% endif %}
+</div>
     </div>
   </header>
 
