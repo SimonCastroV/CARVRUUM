@@ -5,6 +5,7 @@ app_name = "cars"
 
 urlpatterns = [
     path("", views.cars_list, name="cars_list"),
+    path("compare/", views.compare_cars, name="compare_cars"),
     path("new/", views.car_create, name="car_create"),
     path("<int:car_id>/", views.car_detail, name="car_detail"),
     path("<int:car_id>/edit/", views.car_edit, name="car_edit"),

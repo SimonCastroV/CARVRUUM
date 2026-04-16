@@ -12,8 +12,13 @@
       </p>
     </div>
 
-    <div class="text-sm text-slate-500 dark:text-slate-400">
-      {{ cars|length }} resultados
+    <div class="flex items-center gap-3">
+      <a href="{% url 'cars:compare_cars' %}" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+        Comparar vehículos
+      </a>
+      <div class="text-sm text-slate-500 dark:text-slate-400">
+        {{ cars|length }} resultados
+      </div>
     </div>
   </div>
 

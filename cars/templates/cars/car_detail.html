@@ -76,6 +76,10 @@
         </a>
       {% endif %}
 
+      <a href="{% url 'cars:compare_cars' %}?cars={{ car.id }}" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+        Comparar este vehículo
+      </a>
+
       <a href="/cars/new/" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
         Publicar carro
       </a>

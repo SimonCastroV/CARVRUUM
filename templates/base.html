@@ -36,6 +36,9 @@
         <a href="{% url 'cars:cars_list' %}" class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
           Explorar
         </a>
+        <a href="{% url 'cars:compare_cars' %}" class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+          Comparar
+        </a>
 
         {% if user.is_authenticated %}
           <a href="{% url 'cars:car_create' %}" class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">

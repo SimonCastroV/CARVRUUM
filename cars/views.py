@@ -22,6 +22,27 @@ def _normalize_phone_to_wa(phone: str) -> str | None:
     return digits
 
 
+def _format_compare_number(value: int) -> str:
+    return f"{int(value):,}"
+
+
+def _build_comparison_rows(cars):
+    return [
+        {"label": "Marca", "values": [car.make for car in cars]},
+        {"label": "Modelo", "values": [car.model for car in cars]},
+        {"label": "Año", "values": [str(car.year) for car in cars]},
+        {"label": "Precio", "values": [f"$ {_format_compare_number(car.price)}" for car in cars]},
+        {"label": "Kilometraje", "values": [f"{_format_compare_number(car.mileage_km)} km" for car in cars]},
+        {"label": "Ciudad", "values": [car.city or "Sin ciudad" for car in cars]},
+        {"label": "Estado", "values": ["Vendido" if car.is_sold else "Disponible" for car in cars]},
+        {"label": "Vendedor", "values": [car.owner.username for car in cars]},
+        {
+            "label": "Publicado",
+            "values": [car.created_at.strftime("%d/%m/%Y") for car in cars],
+        },
+    ]
+
+
 def cars_list(request):
     q = (request.GET.get("q") or "").strip()
     city = (request.GET.get("city") or "").strip()
@@ -85,6 +106,49 @@ def cars_list(request):
         "max_price": max_price_raw,
         "available_makes": list(available_makes),
         "available_cities": list(available_cities),
+    })
+
+
+def compare_cars(request):
+    selected_ids = []
+    seen_ids = set()
+
+    for raw_id in request.GET.getlist("cars"):
+        if raw_id.isdigit():
+            car_id = int(raw_id)
+            if car_id not in seen_ids:
+                seen_ids.add(car_id)
+                selected_ids.append(car_id)
+
+    compare_limit = 3
+    comparison_error = None
+    selected_cars = []
+
+    cars_qs = (
+        Car.objects.filter(is_active=True)
+        .select_related("owner")
+        .prefetch_related("images")
+        .order_by("-created_at")
+    )
+
+    if len(selected_ids) > compare_limit:
+        comparison_error = "Puedes comparar hasta 3 vehículos al mismo tiempo."
+    elif selected_ids:
+        cars_by_id = {car.id: car for car in cars_qs.filter(id__in=selected_ids)}
+        selected_cars = [cars_by_id[car_id] for car_id in selected_ids if car_id in cars_by_id]
+
+        if len(selected_cars) < 2:
+            comparison_error = "Selecciona al menos 2 vehículos activos para compararlos."
+
+    comparison_rows = _build_comparison_rows(selected_cars) if len(selected_cars) >= 2 else []
+
+    return render(request, "cars/compare_cars.html", {
+        "available_cars": cars_qs,
+        "selected_ids": selected_ids,
+        "selected_cars": selected_cars,
+        "comparison_rows": comparison_rows,
+        "comparison_error": comparison_error,
+        "compare_limit": compare_limit,
     })
 
 
