@@ -5,25 +5,72 @@
 <section class="mx-auto max-w-md px-4 py-14">
   <div class="rounded-3xl border border-slate-200 p-8 shadow-sm dark:border-slate-800">
     <h1 class="text-2xl font-bold">Crear cuenta</h1>
-    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Regístrate para publicar y guardar favoritos.</p>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+      Regístrate para publicar y guardar favoritos.
+    </p>
 
     <form method="post" class="mt-6 space-y-4">
       {% csrf_token %}
 
-      <div><label class="text-sm font-semibold">Usuario</label>{{ form.username }}</div>
-      <div><label class="text-sm font-semibold">Correo</label>{{ form.email }}</div>
-      <div><label class="text-sm font-semibold">Teléfono</label>{{ form.telefono }}</div>
-      <div><label class="text-sm font-semibold">Ciudad</label>{{ form.ciudad_residencia }}</div>
-      <div><label class="text-sm font-semibold">Contraseña</label>{{ form.password1 }}</div>
-      <div><label class="text-sm font-semibold">Confirmar</label>{{ form.password2 }}</div>
+      {% if form.errors %}
+        <div class="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <strong>Corrige lo siguiente:</strong>
+          <ul class="mt-2 list-disc pl-5">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
 
-      <button class="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700" type="submit">
+      <div>
+        <label class="text-sm font-semibold">Usuario</label>
+        {{ form.username }}
+      </div>
+
+      <div>
+        <label class="text-sm font-semibold">Correo</label>
+        {{ form.email }}
+      </div>
+
+      <div>
+        <label class="text-sm font-semibold">Teléfono</label>
+        {{ form.telefono }}
+      </div>
+
+      <div>
+        <label class="text-sm font-semibold">Ciudad</label>
+        {{ form.ciudad_residencia }}
+      </div>
+
+      <div>
+        <label class="text-sm font-semibold">Contraseña</label>
+        {{ form.password1 }}
+      </div>
+
+      <div>
+        <label class="text-sm font-semibold">Confirmar</label>
+        {{ form.password2 }}
+      </div>
+
+      <button
+        class="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+        type="submit"
+      >
         Registrarme
       </button>
     </form>
 
     <p class="mt-6 text-sm text-slate-600 dark:text-slate-300">
-      ¿Ya tienes cuenta? <a class="font-semibold text-blue-600 hover:underline dark:text-blue-400" href="{% url 'login' %}">Inicia sesión</a>
+      ¿Ya tienes cuenta?
+      <a class="font-semibold text-blue-600 hover:underline dark:text-blue-400" href="{% url 'login' %}">
+        Inicia sesión
+      </a>
     </p>
   </div>
 </section>
@@ -37,6 +84,9 @@
     border: 1px solid rgba(148,163,184,.6);
     background: transparent;
   }
-  .dark input, .dark select { border-color: rgba(51,65,85,.8); }
+
+  .dark input, .dark select {
+    border-color: rgba(51,65,85,.8);
+  }
 </style>
 {% endblock %}
