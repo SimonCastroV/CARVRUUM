@@ -1,9 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Profile
-from django import forms
 from .models import Profile, CIUDADES_COLOMBIA
+
+
 # ------------------------------
 # LOGIN FORM
 # ------------------------------
@@ -18,7 +18,7 @@ class LoginForm(AuthenticationForm):
 class RegisterForm(forms.ModelForm):
     password1 = forms.CharField(label="Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     password2 = forms.CharField(label="Confirmar Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-    telefono = forms.CharField(label="Teléfono", required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    telefono  = forms.CharField(label="Teléfono", required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     CIUDADES_COLOMBIA = [
         ('', 'Seleccionar ciudad'),
@@ -52,12 +52,20 @@ class RegisterForm(forms.ModelForm):
     )
 
     class Meta:
-        model = User
+        model  = User
         fields = ['username', 'email']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'email':    forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not email:
+            raise forms.ValidationError("El correo es obligatorio.")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Ya existe una cuenta con ese correo.")
+        return email
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -75,15 +83,32 @@ class RegisterForm(forms.ModelForm):
 
 
 # ------------------------------
+# VERIFY CODE FORM
+# ------------------------------
+class VerifyCodeForm(forms.Form):
+    code = forms.CharField(
+        label="Código de verificación",
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={
+            "placeholder":   "000000",
+            "autocomplete":  "one-time-code",
+            "inputmode":     "numeric",
+            "class":         "w-full text-center tracking-widest text-2xl font-bold rounded-2xl border border-slate-200 bg-transparent px-4 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700",
+        })
+    )
+
+
+# ------------------------------
 # USER FORM
 # ------------------------------
 class UserForm(forms.ModelForm):
     class Meta:
-        model = User
+        model  = User
         fields = ['username', 'email']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control rounded'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control rounded'}),
+            'email':    forms.EmailInput(attrs={'class': 'form-control rounded'}),
         }
 
 
@@ -123,14 +148,16 @@ class ProfileForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Profile
-        fields = ['telefono', 'ciudad']
+        model   = Profile
+        fields  = ['telefono', 'ciudad']
         widgets = {
             'telefono': forms.TextInput(attrs={'class': 'form-control rounded'}),
         }
 
 
-
+# ------------------------------
+# PROFILE EDIT FORM
+# ------------------------------
 class ProfileEditForm(forms.Form):
     telefono = forms.CharField(
         max_length=20,

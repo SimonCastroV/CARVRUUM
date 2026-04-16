@@ -1,30 +1,165 @@
+import random
+import time
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.conf import settings as django_settings
 
-from .forms import RegisterForm, ProfileEditForm
+from .forms import RegisterForm, ProfileEditForm, VerifyCodeForm
 from .models import Profile
-
 from cars.models import Car, Favorite
 
+VERIFY_EXPIRY_SECONDS = 600   # 10 minutos
+MAX_ATTEMPTS          = 3
 
+
+def _generate_code():
+    return str(random.randint(100000, 999999))
+
+
+def _send_verification_email(email, code):
+    send_mail(
+        subject="Tu código de verificación — CarVRuuum",
+        message=(
+            f"Hola,\n\n"
+            f"Tu código de verificación es: {code}\n\n"
+            f"Este código expira en 10 minutos.\n"
+            f"Si no solicitaste esto, ignora este correo.\n\n"
+            f"— El equipo de CarVRuuum"
+        ),
+        from_email=django_settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )
+
+
+# ────────────────────────────────────────────────────────────────
 def landing(request):
     total_cars = Car.objects.filter(is_active=True).count()
 
-    my_cars_count = 0
+    my_cars_count      = 0
     my_favorites_count = 0
     if request.user.is_authenticated:
-        my_cars_count = Car.objects.filter(owner=request.user).count()
+        my_cars_count      = Car.objects.filter(owner=request.user).count()
         my_favorites_count = Favorite.objects.filter(user=request.user).count()
 
     return render(request, "account/landing.html", {
-        "total_cars": total_cars,
-        "my_cars_count": my_cars_count,
-        "my_favorites_count": my_favorites_count,
+        "total_cars":          total_cars,
+        "my_cars_count":       my_cars_count,
+        "my_favorites_count":  my_favorites_count,
     })
 
 
+# ────────────────────────────────────────────────────────────────
+def register_view(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            # Guardar datos en sesión, NO crear el usuario todavía
+            code = _generate_code()
+            request.session["pending_registration"] = {
+                "username":  form.cleaned_data["username"],
+                "email":     form.cleaned_data["email"],
+                "password":  form.cleaned_data["password1"],
+                "telefono":  form.cleaned_data.get("telefono", ""),
+                "ciudad":    form.cleaned_data.get("ciudad_residencia", ""),
+            }
+            request.session["email_verification_code"]      = code
+            request.session["email_verification_timestamp"] = time.time()
+            request.session["email_verification_attempts"]  = 0
+
+            _send_verification_email(form.cleaned_data["email"], code)
+
+            return redirect("verify_email")
+    else:
+        form = RegisterForm()
+
+    return render(request, "account/register.html", {"form": form})
+
+
+# ────────────────────────────────────────────────────────────────
+def verify_email_view(request):
+    # Si no hay registro pendiente, volver al registro
+    pending = request.session.get("pending_registration")
+    if not pending:
+        return redirect("register")
+
+    form     = VerifyCodeForm()
+    error    = None
+    expired  = False
+
+    elapsed = time.time() - request.session.get("email_verification_timestamp", 0)
+    if elapsed > VERIFY_EXPIRY_SECONDS:
+        expired = True
+
+    if request.method == "POST":
+
+        # Botón de reenviar código
+        if "resend" in request.POST:
+            if elapsed <= VERIFY_EXPIRY_SECONDS * 2:   # Anti-abuso básico
+                code = _generate_code()
+                request.session["email_verification_code"]      = code
+                request.session["email_verification_timestamp"] = time.time()
+                request.session["email_verification_attempts"]  = 0
+                _send_verification_email(pending["email"], code)
+            return redirect("verify_email")
+
+        # Verificar código
+        form     = VerifyCodeForm(request.POST)
+        attempts = request.session.get("email_verification_attempts", 0)
+
+        if expired:
+            error = "El código ha expirado. Por favor reenvía uno nuevo."
+
+        elif attempts >= MAX_ATTEMPTS:
+            error = "Demasiados intentos fallidos. Solicita un nuevo código."
+
+        elif form.is_valid():
+            entered = form.cleaned_data["code"].strip()
+            correct = request.session.get("email_verification_code", "")
+
+            if entered == correct:
+                # ✅ Código correcto → crear cuenta
+                from django.contrib.auth.models import User
+                user = User.objects.create_user(
+                    username=pending["username"],
+                    email=pending["email"],
+                    password=pending["password"],
+                )
+                profile, _ = Profile.objects.get_or_create(user=user)
+                profile.telefono = pending.get("telefono", "")
+                profile.ciudad   = pending.get("ciudad", "")
+                profile.save()
+
+                # Limpiar sesión
+                for key in ["pending_registration", "email_verification_code",
+                            "email_verification_timestamp", "email_verification_attempts"]:
+                    request.session.pop(key, None)
+
+                login(request, user)
+                return redirect("home")
+
+            else:
+                attempts += 1
+                request.session["email_verification_attempts"] = attempts
+                remaining = MAX_ATTEMPTS - attempts
+                if remaining > 0:
+                    error = f"Código incorrecto. Te quedan {remaining} intento{'s' if remaining != 1 else ''}."
+                else:
+                    error = "Demasiados intentos fallidos. Solicita un nuevo código."
+
+    return render(request, "account/verify_email.html", {
+        "form":    form,
+        "email":   pending["email"],
+        "error":   error,
+        "expired": expired,
+    })
+
+
+# ────────────────────────────────────────────────────────────────
 @login_required
 def profile_view(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
@@ -56,6 +191,7 @@ def profile_view(request):
     })
 
 
+# ────────────────────────────────────────────────────────────────
 def login_view(request):
     next_url = request.GET.get("next") or request.POST.get("next")
 
@@ -73,24 +209,13 @@ def login_view(request):
     return render(request, "account/login.html", {"form": form, "next": next_url})
 
 
-def register_view(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-
-            profile, _ = Profile.objects.get_or_create(user=user)
-            profile.telefono = form.cleaned_data.get("telefono")
-            profile.ciudad   = form.cleaned_data.get("ciudad_residencia")
-            profile.save()
-
-            return redirect("login")
-    else:
-        form = RegisterForm()
-
-    return render(request, "account/register.html", {"form": form})
+# ────────────────────────────────────────────────────────────────
+def register_view_old(request):
+    """Guardado por si acaso — ya no se usa."""
+    pass
 
 
+# ────────────────────────────────────────────────────────────────
 @login_required
 def home(request):
     profile = getattr(request.user, "profile", None)
