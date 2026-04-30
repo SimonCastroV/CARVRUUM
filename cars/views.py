@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Car, CarImage, Favorite, CarViewHistory
 from .forms import CarForm
-
+import json
 
 def _normalize_phone_to_wa(phone: str) -> str | None:
     if not phone:
@@ -319,4 +319,76 @@ def my_favorites(request):
     return render(request, "cars/my_favorites.html", {
         "cars": cars,
         "favorite_ids": favorite_ids,
+    })
+
+def map_view(request):
+    CITY_COORDS = {
+        "bogotá":        (4.7110, -74.0721),
+        "bogota":        (4.7110, -74.0721),
+        "medellín":      (6.2442, -75.5812),
+        "medellin":      (6.2442, -75.5812),
+        "cali":          (3.4516, -76.5320),
+        "barranquilla":  (10.9685, -74.7813),
+        "cartagena":     (10.3910, -75.4794),
+        "bucaramanga":   (7.1193, -73.1227),
+        "pereira":       (4.8087, -75.6906),
+        "santa marta":   (11.2408, -74.1990),
+        "santamarta":    (11.2408, -74.1990),
+        "manizales":     (5.0703, -75.5138),
+        "cúcuta":        (7.8939, -72.5078),
+        "cucuta":        (7.8939, -72.5078),
+        "ibagué":        (4.4389, -75.2322),
+        "ibague":        (4.4389, -75.2322),
+        "neiva":         (2.9273, -75.2819),
+        "villavicencio": (4.1420, -73.6266),
+        "pasto":         (1.2136, -77.2811),
+        "montería":      (8.7575, -75.8857),
+        "monteria":      (8.7575, -75.8857),
+        "popayán":       (2.4448, -76.6147),
+        "popayan":       (2.4448, -76.6147),
+        "sincelejo":     (9.3047, -75.3978),
+        "valledupar":    (10.4631, -73.2532),
+        "armenia":       (4.5339, -75.6811),
+        "riohacha":      (11.5444, -72.9072),
+    }
+
+    active_cars = (
+        Car.objects.filter(is_active=True)
+        .select_related("owner")
+        .prefetch_related("images")
+        .exclude(city="")
+    )
+
+    # Agrupar por ciudad
+    city_data = {}
+    for car in active_cars:
+        city_key = car.city.lower().strip()
+        coords = CITY_COORDS.get(city_key)
+        if not coords:
+            continue
+
+        if city_key not in city_data:
+            city_data[city_key] = {
+                "name":   car.city,
+                "lat":    coords[0],
+                "lng":    coords[1],
+                "cars":   [],
+            }
+
+        first_image = car.images.first()
+        city_data[city_key]["cars"].append({
+            "id":    car.id,
+            "make":  car.make,
+            "model": car.model,
+            "year":  car.year,
+            "price": f"${car.price:,}",
+            "url":   car.get_url(),
+            "image": first_image.image.url if first_image else None,
+        })
+
+    cities_json = json.dumps(list(city_data.values()))
+
+    return render(request, "cars/map.html", {
+        "cities_json": cities_json,
+        "total_cars":  active_cars.count(),
     })
