@@ -3,7 +3,7 @@ from urllib.parse import quote
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Count, F, Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
@@ -162,7 +162,10 @@ def car_detail(request, car_id: int):
         is_active=True,
     )
 
-    # Guardar historial de visualización
+    # Incrementar contador global de vistas (todas las visitas, incluidas anónimas)
+    Car.objects.filter(pk=car.pk).update(view_count=F('view_count') + 1)
+
+    # Guardar historial por usuario autenticado
     if request.user.is_authenticated:
         history, created = CarViewHistory.objects.get_or_create(
             user=request.user,
@@ -525,3 +528,33 @@ def car_list_delete(request, list_id: int):
 
     messages.success(request, "Lista eliminada correctamente.")
     return redirect("cars:car_lists")
+
+
+@login_required
+def car_stats(request):
+    cars = (
+        Car.objects.filter(owner=request.user, is_active=True)
+        .annotate(
+            unique_viewers=Count('viewed_by', distinct=True),
+            total_favorites=Count('favorited_by', distinct=True),
+        )
+        .order_by('-view_count')
+    )
+
+    total_views = sum(c.view_count for c in cars)
+    total_unique = sum(c.unique_viewers for c in cars)
+    total_favs = sum(c.total_favorites for c in cars)
+
+    chart_labels = json.dumps([f"{c.make} {c.model} {c.year}" for c in cars])
+    chart_views = json.dumps([c.view_count for c in cars])
+    chart_unique = json.dumps([c.unique_viewers for c in cars])
+
+    return render(request, 'cars/car_stats.html', {
+        'cars': cars,
+        'total_views': total_views,
+        'total_unique': total_unique,
+        'total_favs': total_favs,
+        'chart_labels': chart_labels,
+        'chart_views': chart_views,
+        'chart_unique': chart_unique,
+    })

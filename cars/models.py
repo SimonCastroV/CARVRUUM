@@ -21,6 +21,7 @@ class Car(models.Model):
     description = models.TextField(blank=True, default="")
 
     is_active = models.BooleanField(default=True)
+    view_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

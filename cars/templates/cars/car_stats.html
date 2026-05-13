@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Estadísticas de mis publicaciones | CarVRuuum{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 py-10">
+
+  <a href="{% url 'profile' %}" class="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400">
+    ← Volver al perfil
+  </a>
+
+  <h1 class="mt-4 text-2xl font-bold text-slate-900 dark:text-white">
+    Estadísticas de mis publicaciones
+  </h1>
+  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+    Resumen de vistas y actividad en tus carros publicados.
+  </p>
+
+  <!-- Tarjetas resumen -->
+  <div class="mt-6 grid gap-4 sm:grid-cols-3">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+      <p class="text-sm text-slate-500 dark:text-slate-400">Total de vistas</p>
+      <p class="mt-1 text-3xl font-bold text-blue-600 dark:text-blue-400">{{ total_views }}</p>
+      <p class="mt-1 text-xs text-slate-400">En todos tus carros</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+      <p class="text-sm text-slate-500 dark:text-slate-400">Visitantes únicos</p>
+      <p class="mt-1 text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ total_unique }}</p>
+      <p class="mt-1 text-xs text-slate-400">Usuarios registrados que te vieron</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+      <p class="text-sm text-slate-500 dark:text-slate-400">Total favoritos</p>
+      <p class="mt-1 text-3xl font-bold text-pink-600 dark:text-pink-400">{{ total_favs }}</p>
+      <p class="mt-1 text-xs text-slate-400">Usuarios que guardaron tus carros</p>
+    </div>
+  </div>
+
+  {% if cars %}
+
+  <!-- Gráfico de barras -->
+  <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+    <h2 class="mb-4 text-base font-semibold text-slate-700 dark:text-slate-200">
+      Vistas por publicación
+    </h2>
+    <div class="relative" style="min-height: 260px;">
+      <canvas id="statsChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Tabla detallada -->
+  <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+          <th class="px-4 py-3 text-left font-semibold text-slate-600 dark:text-slate-300">Publicación</th>
+          <th class="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300">Vistas totales</th>
+          <th class="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300">Visitantes únicos</th>
+          <th class="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300">Favoritos</th>
+          <th class="px-4 py-3 text-center font-semibold text-slate-600 dark:text-slate-300">Estado</th>
+          <th class="px-4 py-3 text-right font-semibold text-slate-600 dark:text-slate-300">Ver</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for car in cars %}
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
+          <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">
+            {{ car.make }} {{ car.model }} {{ car.year }}
+            <span class="ml-2 text-xs text-slate-400">${{ car.price|floatformat:0 }}</span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center rounded-lg bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              {{ car.view_count }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+              {{ car.unique_viewers }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center rounded-lg bg-pink-50 px-3 py-1 text-sm font-semibold text-pink-700 dark:bg-pink-950 dark:text-pink-300">
+              {{ car.total_favorites }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            {% if car.is_sold %}
+              <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">Vendido</span>
+            {% else %}
+              <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-950 dark:text-green-400">Disponible</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-right">
+            <a href="{% url 'cars:car_detail' car.id %}"
+               class="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">
+              Ver →
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-10 text-center dark:border-slate-800 dark:bg-slate-950">
+    <p class="text-slate-500 dark:text-slate-400">Aún no tienes publicaciones activas.</p>
+    <a href="{% url 'cars:car_create' %}"
+       class="mt-4 inline-flex rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+      Publicar mi primer carro
+    </a>
+  </div>
+  {% endif %}
+
+</section>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  const el = document.getElementById('statsChart');
+  if (!el) return;
+
+  const isDark = document.documentElement.classList.contains('dark');
+  const gridColor  = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const labelColor = isDark ? '#94a3b8' : '#64748b';
+
+  new Chart(el, {
+    type: 'bar',
+    data: {
+      labels: {{ chart_labels|safe }},
+      datasets: [
+        {
+          label: 'Vistas totales',
+          data: {{ chart_views|safe }},
+          backgroundColor: 'rgba(37, 99, 235, 0.75)',
+          borderColor: 'rgba(37, 99, 235, 1)',
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+        {
+          label: 'Visitantes únicos',
+          data: {{ chart_unique|safe }},
+          backgroundColor: 'rgba(99, 102, 241, 0.65)',
+          borderColor: 'rgba(99, 102, 241, 1)',
+          borderWidth: 1,
+          borderRadius: 6,
+        },
+      ],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: labelColor, font: { size: 12 } },
+        },
+        tooltip: { mode: 'index', intersect: false },
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          ticks: { color: labelColor, precision: 0 },
+          grid: { color: gridColor },
+        },
+        y: {
+          ticks: { color: labelColor, font: { size: 12 } },
+          grid: { color: gridColor },
+        },
+      },
+    },
+  });
+})();
+</script>
+{% endblock %}

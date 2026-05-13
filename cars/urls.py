@@ -11,6 +11,7 @@ urlpatterns = [
 
     path("favorites/", views.my_favorites, name="my_favorites"),
     path("history/", views.viewed_history, name="viewed_history"),
+    path("stats/", views.car_stats, name="car_stats"),
 
     path("lists/", views.car_lists, name="car_lists"),
     path("lists/create/", views.car_list_create, name="car_list_create"),
