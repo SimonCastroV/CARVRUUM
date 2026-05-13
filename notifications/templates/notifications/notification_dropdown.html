@@ -1,0 +1,132 @@
+<div class="relative">
+
+  <!-- Botón campana -->
+  <button
+    id="notifications-btn"
+    class="relative rounded-xl border border-slate-200 px-3 py-2 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+  >
+    <span class="text-lg">🔔</span>
+
+    <!-- Badge -->
+    <span
+      id="notifications-badge"
+      class="absolute -right-1 -top-1 {% if navbar_notifications_count == 0 %}hidden{% endif %} flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white"
+    >
+      {{ navbar_notifications_count }}
+    </span>
+  </button>
+
+  <!-- Dropdown -->
+  <div
+    id="notifications-dropdown"
+    class="absolute right-0 mt-2 hidden w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-950"
+  >
+
+    <!-- Header -->
+    <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+      <h3 class="font-semibold">Notificaciones</h3>
+    </div>
+
+    <!-- Lista (se llena dinámicamente) -->
+    <div id="notifications-list" class="max-h-96 overflow-y-auto"></div>
+
+  </div>
+
+</div>
+
+<script>
+  const btn = document.getElementById("notifications-btn");
+  const dropdown = document.getElementById("notifications-dropdown");
+  const badge = document.getElementById("notifications-badge");
+  const list = document.getElementById("notifications-list");
+
+  function renderNotifications(notifications) {
+    if (notifications.length === 0) {
+      list.innerHTML = `
+        <div class="px-4 py-10 text-center">
+          <div class="mb-2 text-3xl">🔕</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">No tienes notificaciones</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = notifications.map(n => `
+      <a href="${n.url}" class="block border-b border-slate-100 px-4 py-3 transition hover:bg-slate-50 dark:border-slate-900 dark:hover:bg-slate-900">
+        <div class="flex items-start gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold uppercase text-white">
+            ${n.sender[0]}
+          </div>
+          <div class="flex-1">
+            <p class="text-sm text-slate-700 dark:text-slate-200">
+              <span class="font-semibold">${n.sender}</span> ${n.title}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">${n.time_ago}</p>
+          </div>
+        </div>
+      </a>`
+    ).join("");
+  }
+
+  function loadNotifications() {
+    fetch("{% url 'notifications:unread_notifications' %}")
+      .then(res => res.json())
+      .then(data => renderNotifications(data.notifications));
+  }
+
+  // Abrir/cerrar dropdown
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const isHidden = dropdown.classList.toggle("hidden");
+
+    if (!isHidden) {
+      // Al abrir: cargar notificaciones
+      loadNotifications();
+    } else {
+      // Al cerrar: marcar como leídas
+      fetch("{% url 'notifications:mark_read' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+          "Content-Type": "application/json",
+        },
+      }).then(() => {
+        badge.classList.add("hidden");
+        badge.textContent = "0";
+      });
+    }
+  });
+
+  // Cerrar al hacer click afuera
+  document.addEventListener("click", function (e) {
+    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+      if (!dropdown.classList.contains("hidden")) {
+        // Marcar como leídas al cerrar por click afuera
+        fetch("{% url 'notifications:mark_read' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/json",
+          },
+        }).then(() => {
+          badge.classList.add("hidden");
+          badge.textContent = "0";
+        });
+        dropdown.classList.add("hidden");
+      }
+    }
+  });
+
+  // Polling cada 10 segundos
+  setInterval(function () {
+    fetch("{% url 'notifications:unread_count' %}")
+      .then(res => res.json())
+      .then(data => {
+        if (data.count > 0) {
+          badge.textContent = data.count;
+          badge.classList.remove("hidden");
+        } else {
+          badge.classList.add("hidden");
+        }
+      });
+  }, 10000);
+</script>

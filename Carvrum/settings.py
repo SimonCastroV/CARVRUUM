@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'cars.apps.CarsConfig',
     'messaging.apps.MessagingConfig',
     'django.contrib.humanize',
+    "notifications.apps.NotificationsConfig",
+    
 ]
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/login/'
@@ -76,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'notifications.context_processors.notifications',
             ],
         },
     },
