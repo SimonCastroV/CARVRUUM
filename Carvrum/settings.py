@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'messaging.apps.MessagingConfig',
     'django.contrib.humanize',
     "notifications.apps.NotificationsConfig",
-    
+    "reports.apps.ReportsConfig",
 ]
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/login/'

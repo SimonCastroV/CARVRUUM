@@ -12,7 +12,9 @@ urlpatterns = [
     # cars con namespace
     path("cars/", include(("cars.urls", "cars"), namespace="cars")),
     path("messages/", include(("messaging.urls", "messaging"), namespace="messaging")),
-    path("notifications/", include(("notifications.urls", "notifications"), namespace="notifications")),]
+    path("notifications/", include(("notifications.urls", "notifications"), namespace="notifications")),
+    path("cars/", include(("reports.urls", "reports"), namespace="reports")),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
