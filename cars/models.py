@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 
 class Car(models.Model):
@@ -27,10 +28,9 @@ class Car(models.Model):
 
     def __str__(self):
         return f"{self.make} {self.model} {self.year} - {self.price}"
-    
-    def get_url(self):
-        return reverse('cars:car_detail', args=[str(self.id)])
 
+    def get_url(self):
+        return reverse("cars:car_detail", args=[str(self.id)])
 
 
 def car_image_upload_to(instance, filename: str) -> str:
@@ -45,14 +45,10 @@ class CarImage(models.Model):
     def __str__(self):
         return f"Image {self.id} for Car {self.car_id}"
 
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils import timezone
-
 
 class CarViewHistory(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="view_history")
-    car = models.ForeignKey("Car", on_delete=models.CASCADE, related_name="viewed_by")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="view_history")
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name="viewed_by")
     first_viewed_at = models.DateTimeField(auto_now_add=True)
     last_viewed_at = models.DateTimeField(default=timezone.now)
     times_viewed = models.PositiveIntegerField(default=1)
@@ -77,3 +73,39 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user_id} ❤️ {self.car_id}"
+
+
+class CarList(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="car_lists",
+    )
+    name = models.CharField(max_length=80)
+    description = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "name"], name="unique_car_list_name_per_user")
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.user.username}"
+
+
+class CarListItem(models.Model):
+    car_list = models.ForeignKey(CarList, on_delete=models.CASCADE, related_name="items")
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name="list_items")
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-added_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["car_list", "car"], name="unique_car_per_list")
+        ]
+
+    def __str__(self):
+        return f"{self.car} en {self.car_list.name}"

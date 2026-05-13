@@ -110,9 +110,15 @@
       {% endif %}
     </div>
 
-    <div class="px-6 pb-6">
-      <a href="{% url 'cars:viewed_history' %}" class="text-sm text-blue-600 hover:underline">📋 Ver historial</a>
-    </div>
+    <div class="flex flex-wrap gap-4 px-6 pb-6">
+  <a href="{% url 'cars:car_lists' %}" class="text-sm text-blue-600 hover:underline">
+    🗂️ Ver mis listas personalizadas
+  </a>
+
+  <a href="{% url 'cars:viewed_history' %}" class="text-sm text-blue-600 hover:underline">
+    📋 Ver historial
+  </a>
+</div>
   </div>
 </section>
 

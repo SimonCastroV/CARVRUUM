@@ -1,11 +1,41 @@
 from django import forms
-from .models import Car
+from .models import Car, CarList
 
 
 class CarForm(forms.ModelForm):
     class Meta:
         model = Car
         fields = ["make", "model", "year", "price", "mileage_km", "city", "description"]
+
+
+class CarListForm(forms.ModelForm):
+    class Meta:
+        model = CarList
+        fields = ["name", "description"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white",
+                "placeholder": "Ej: Carros familiares",
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white",
+                "placeholder": "Descripción opcional",
+                "rows": 3,
+            }),
+        }
+
+
+class AddCarToListsForm(forms.Form):
+    lists = forms.ModelMultipleChoiceField(
+        queryset=CarList.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        label="Listas",
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["lists"].queryset = CarList.objects.filter(user=user).order_by("name")
 
 
 class MultipleFileInput(forms.ClearableFileInput):

@@ -1,13 +1,16 @@
 from urllib.parse import quote
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from .models import Car, CarImage, Favorite, CarViewHistory
-from .forms import CarForm
+
+from .forms import AddCarToListsForm, CarForm, CarListForm
+from .models import Car, CarImage, Favorite, CarViewHistory, CarList, CarListItem
+
 import json
 
 def _normalize_phone_to_wa(phone: str) -> str | None:
@@ -176,8 +179,18 @@ def car_detail(request, car_id: int):
             history.save(update_fields=["last_viewed_at", "times_viewed"])
 
     is_favorite = False
+    user_lists = []
+    car_list_ids = set()
+
     if request.user.is_authenticated:
         is_favorite = Favorite.objects.filter(user=request.user, car=car).exists()
+        user_lists = CarList.objects.filter(user=request.user).order_by("name")
+        car_list_ids = set(
+            CarListItem.objects.filter(
+                car=car,
+                car_list__user=request.user,
+            ).values_list("car_list_id", flat=True)
+        )
 
     # WhatsApp del vendedor (si tiene teléfono en Profile)
     seller_phone = getattr(getattr(car.owner, "profile", None), "telefono", "") or ""
@@ -192,9 +205,10 @@ def car_detail(request, car_id: int):
         "is_favorite": is_favorite,
         "seller_whatsapp_url": seller_whatsapp_url,
         "seller_phone": seller_phone,
+        "user_lists": user_lists,
+        "car_list_ids": car_list_ids,
     })
 
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def viewed_history(request):
@@ -392,3 +406,122 @@ def map_view(request):
         "cities_json": cities_json,
         "total_cars":  active_cars.count(),
     })
+
+
+@login_required
+def car_lists(request):
+    lists = (
+        CarList.objects
+        .filter(user=request.user)
+        .prefetch_related("items", "items__car", "items__car__images")
+        .order_by("-updated_at")
+    )
+
+    return render(request, "cars/car_lists.html", {
+        "lists": lists,
+        "form": CarListForm(),
+    })
+
+
+@login_required
+def car_list_create(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    form = CarListForm(request.POST)
+
+    if form.is_valid():
+        car_list = form.save(commit=False)
+        car_list.user = request.user
+
+        try:
+            car_list.save()
+            messages.success(request, "Lista creada correctamente.")
+            return redirect("cars:car_list_detail", list_id=car_list.id)
+        except IntegrityError:
+            form.add_error("name", "Ya tienes una lista con este nombre.")
+
+    lists = (
+        CarList.objects
+        .filter(user=request.user)
+        .prefetch_related("items", "items__car", "items__car__images")
+        .order_by("-updated_at")
+    )
+
+    return render(request, "cars/car_lists.html", {
+        "lists": lists,
+        "form": form,
+    })
+
+
+@login_required
+def car_list_detail(request, list_id: int):
+    car_list = get_object_or_404(
+        CarList.objects.prefetch_related("items", "items__car", "items__car__images"),
+        id=list_id,
+        user=request.user,
+    )
+
+    return render(request, "cars/car_list_detail.html", {
+        "car_list": car_list,
+        "items": car_list.items.all(),
+    })
+
+
+@login_required
+def add_car_to_lists(request, car_id: int):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    car = get_object_or_404(Car, id=car_id, is_active=True)
+    form = AddCarToListsForm(request.user, request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Selecciona al menos una lista.")
+        return redirect("cars:car_detail", car_id=car.id)
+
+    added_count = 0
+
+    for car_list in form.cleaned_data["lists"]:
+        _, created = CarListItem.objects.get_or_create(
+            car_list=car_list,
+            car=car,
+        )
+        if created:
+            added_count += 1
+
+    if added_count:
+        messages.success(request, f"Vehículo agregado a {added_count} lista(s).")
+    else:
+        messages.info(request, "Este vehículo ya estaba en las listas seleccionadas.")
+
+    back = request.META.get("HTTP_REFERER")
+    return redirect(back or "cars:car_detail", car_id=car.id)
+
+
+@login_required
+def remove_car_from_list(request, list_id: int, car_id: int):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    car_list = get_object_or_404(CarList, id=list_id, user=request.user)
+
+    CarListItem.objects.filter(
+        car_list=car_list,
+        car_id=car_id,
+    ).delete()
+
+    messages.success(request, "Vehículo eliminado de la lista.")
+    return redirect("cars:car_list_detail", list_id=car_list.id)
+
+
+@login_required
+def car_list_delete(request, list_id: int):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    car_list = get_object_or_404(CarList, id=list_id, user=request.user)
+    car_list.delete()
+
+    messages.success(request, "Lista eliminada correctamente.")
+    return redirect("cars:car_lists")
