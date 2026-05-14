@@ -35,9 +35,12 @@
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
 
       <!-- Logo -->
-      <a href="{% url 'landing' %}" class="flex items-center gap-2">
-        <div class="h-9 w-9 rounded-xl bg-blue-600"></div>
-        <span class="text-lg font-semibold tracking-tight">CarVRuuum</span>
+      <a href="{% url 'landing' %}" class="flex items-center">
+        <img
+          src="{% static 'account/img/carvruum-logo.png' %}"
+          alt="CarVRuuum"
+          class="h-8 w-auto object-contain md:h-10"
+        >
       </a>
 
       <!-- Nav escritorio -->
