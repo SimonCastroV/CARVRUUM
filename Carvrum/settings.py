@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         "DJANGO_ALLOWED_HOSTS",
-        "127.0.0.1,localhost,13.221.9.196"
+        "127.0.0.1,localhost,100.50.61.211"
     ).split(",")
     if host.strip()
 ]
